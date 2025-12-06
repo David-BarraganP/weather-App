@@ -1,77 +1,81 @@
-
+import React, { useState, useEffect } from "react";
 import axios from "axios";
-import { useEffect, useState } from "react";
-import WeatherDetail from "./components/WeatherDetail";
+// Importamos  componentes
+import WeatherSearch from './components/WeatherSearch'; 
+import WeatherDetail from './components/WeatherDetail'; 
 
-
-
+//  API Key
+const API_KEY = 'b1a7b49098225ce6586991c2a55dce5f'; 
 
 function App() {
-    //https://api.openweathermap.org/data/2.5/weather?lat={lat}&lon={lon}&appid={API key}
-    // b1a7b49098225ce6586991c2a55dce5f
+  // Estado para el clima que se está mostrando (puede ser actual o buscado)
+  const [currentWeather, setCurrentWeather] = useState(null);
+  const [loading, setLoading] = useState(true);
+
+  // --- 1. FUNCIÓN DE GEOLOCALIZACIÓN (Tu código original) ---
+  const success = (pos) => {
+    const { latitude, longitude } = pos.coords;
     
-    const [weather, setWeather] = useState(null)
+    axios
+      .get(`https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=${API_KEY}&lang=sp&units=metric`)
+      .then(({ data }) => {
+        // Almacenar el clima actual al inicio
+        setCurrentWeather(data); 
+        setLoading(false);
+      })
+      .catch((err) => {
+        console.error("Error al obtener el clima actual:", err);
+        setLoading(false);
+      });
+  };
 
+  useEffect(() => {
+    navigator.geolocation.getCurrentPosition(success);
+  }, []);
 
-    const success = (pos) => {
+  // --- 2. FUNCIÓN PARA MANEJAR LA BÚSQUEDA ---
+  // Esta función se pasa al componente WeatherSearch
+  const handleSearch = (weatherData) => {
+    // Cuando el usuario busca una ciudad, actualizamos el clima mostrado
+    setCurrentWeather(weatherData); 
+  };
 
-    const {coords: {latitude, longitude} } = pos
-    axios.get(
-    `https://api.openweathermap.org/data/2.5/weather?lat=${latitude}&lon=${longitude}&appid=b1a7b49098225ce6586991c2a55dce5f&lang=es&units=metric`
-    )
-    .then(({data}) => setWeather(data))
-    .catch((err) => console.log(err));
-    }
-    
-    
-    useEffect(() => {
-        navigator.geolocation.getCurrentPosition(success)
-    }, []);
+  const bgImages = {
+  "04d": "bg-[url(/images/onday/brokenclouds.jpg)]",
+    "04n": "bg-[url(/images/atnigth/clearskynigth.jpg)]",
+  }
+  
+  return (
+    <main className={`flex justify-center items-center h-screen bg-black text-white bg-blue-700  rounded-xl bg-cover 
+      bg-[url(/images/atnigth/clearskynigth.jpg)]
+    `}>
 
-    const bgImages = {
-    "01d": "bg-[url(/public/images/onday/brokencloudsnigth.jpg)]",
-
-    "01n": "bg-[url(/public/images/atnigth/brokenclouds.jpg)]",
-
-    "02d": "bg-[url(/public/images/onday/Untitledimage.png)]",
-
-    "02n": "bg-[url(/public/images/onday/clearskynigth.jpg)]",
-
-    "03d": "bg-[url(/public/images/onday/Untitledimage.png)]",
-
-    "03n": "bg-[url(/public/images/atnigth/clearskynigth.jpg)]",
-
-    "04d": "bg-[url(/public/images/onday/clearsky.jpg)]",
-
-    "04n": "bg-[url(/public/images/atnigth/clearskynigth.jpg)]",
-
-    "09d": "bg-[url(/public/images/onday/Untitledimage.png)]",
-
-    "09n": "bg-[url(/public/images/atnigth/clearskynigth.jpg)]",
-
-    "10d": "bg-[url(/public/images/onday/Untitledimage.png)]",
-
-    "10n": "bg-[url(/public/images/atnigth/clearskynigth.jpg)]",
-
-    "11d": "bg-[url(/public/images/onday/Untitledimage.png)]",
-
-    "11n": "bg-[url(/public/images/atnigth/clearskynigth.jpg)]",
-
-    "12d": "bg-[url(/public/images/onday/Untitledimage.png)]",
-
-    "12n": "bg-[url(/public/images/atnigth/clearskynigth.jpg)]",
-    };
-
-
-    return (
-    <main
-        className={`flex justify-center items-center h-screen  bg-black text-white bg-cover rounded-xl 
-    ${bgImages[weather?.weather[0].icon]} `}>
-        {
-            weather ?  <WeatherDetail weather={weather}/> : <span>Cargando...</span>
-        }
+      <div className="w-full max-w-sm bg-blue-300 p-6 rounded-3xl shadow-xl bg-[url(/images/atnigth/brokencloudsnigth.jpg)]">
+      <div className="w-full max-w-sm bg-blue-0 p-6 rounded-2xl shadow-xl">
+        <h1 className="text-3xl font-bold text-white text-center mb-6">
+              Barragan weather
+        </h1>
+        
+        {/* 3. Renderizar el Buscador y pasarle la función de manejo */}
+        <WeatherSearch onSearch={handleSearch} />
+        
+        <hr className="my-4 border-white/50" />
+        
+        {/* 4. Renderizar el Detalle del Clima (ya sea actual o buscado) */}
+        {loading && <p className="text-center">Cargando ubicación actual...</p>}
+        
+        {currentWeather && (
+          // Usamos el componente que ya tenías para mostrar el clima
+          <WeatherDetail weather={currentWeather} />
+        )}
+        
+        {!loading && !currentWeather && (
+          <p className="text-center">No se pudo obtener la ubicación. Por favor, busca una ciudad.</p>
+        )}
+      </div>
+      </div>
     </main>
-)
+  );
 }
 
-export default App
+export default App;

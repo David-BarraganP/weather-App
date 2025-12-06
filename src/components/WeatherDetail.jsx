@@ -1,17 +1,24 @@
-import React from 'react'
+import React, { useState } from 'react'
+
+
 
 const WeatherDetail = ({weather}) => {
 
-    const celsiusToFahrenheit = (temCelsius) => {
+const [isCelsius, setIsCelsius] = useState(true);
 
-        const temF = (temCelsius * (9/5) + 32).toFixed(1)
-        return temF
+// Cambia entre Celsius y Fahrenheit
+const handleTemperature = () => {
+    setIsCelsius(isCelsius ? false : true); 
+};
 
-    }
+const celsiusToFahrenheit = (templeCelsius) => {
+    const tempF = (templeCelsius * (9 / 5) + 32).toFixed(1);
+    return tempF;
+};
 
 return (
     <article className='text-center grid gap-4'>
-        <h1>{weather.name}, {weather.sys.country}</h1>
+        <h1 className='bg-white/30 p-1 rounded-xl  text-black '>{weather.name}, {weather.sys.country}</h1>
         <div className='text-black grid gap-4'>
         {/* seccion 1: temperatura, descripcion y imagen */}
                 <section className='bg-white/60 p-2 rounded-xl grid grid-cols-2 items-center'>
@@ -50,9 +57,27 @@ return (
             </div>
         </section>
         </div>
-        <button>
-            combiar  F°
+
+            <div className=" grid gap-2 ">
+{isCelsius ? (
+    // -- Muestra °C cuando isCelsius es TRUE
+<div className=" bg-white/30 p-1 text-2xl rounded-xl text-black grid justify-center items-center">
+{weather.main.temp} °C 
+</div>
+) : (
+    // -- Muestra °F cuando isCelsius es FALSE
+<div className=" bg-white/30 p-1 text-2xl rounded-xl text-black grid justify-center items-center">
+{celsiusToFahrenheit(weather.main.temp)} °F 
+</div>
+)}
+        <button
+        className=" bg-white/30 p-1 rounded-xl  text-black "
+        onClick={handleTemperature}>
+        Cambiar ° a
         </button>
+    </div>
+
+
     </article>
     
 )
